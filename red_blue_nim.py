@@ -22,8 +22,8 @@ def has_duplicates(data, color):
         # print(d)
         if d == color:
             new_list.append(d)
-    print("New List:", new_list)
-    print("Counts:", len(new_list) )
+    # print("New List:", new_list)
+    # print("Counts:", len(new_list) )
     # print("Counts:", len(counts.values()), "\n")
     # print(any(count >= 2 for count in counts.values()))
     if (len(new_list) > 1):
@@ -46,6 +46,7 @@ def remove_one_marble(pile, color):
     scan = print("You've picked 1 red marble")
     if (color in pile):
         pile.remove(color)
+        print("Pile now has:", len(pile), "rocks left")
     else:
         print("Not enough", color, "marbles")
 
@@ -77,7 +78,20 @@ def standard(pile_1, pile_2):
                 break
             
         elif scan == '2':
-            print("You've chosen Pile 2:")
+            print("You've chosen Pile 2:\n")
+            player_choice()
+            scan = input("\n")
+
+            if scan == '1':
+                remove_two_marbles(pile_2, 'red')
+            elif scan == '2':
+                remove_two_marbles(pile_2, 'blue')
+            elif scan == '3':
+                remove_one_marble(pile_2, 'red')
+            elif scan == '4':
+                remove_one_marble(pile_2, 'blue')
+            elif scan == 'q':
+                break
         else:
             scan = print("Invalid choice. Please choose 1 or 2\n")
 
@@ -86,7 +100,7 @@ def player_choice():
     print("1. Pick 2 red marbles")
     print("2. Pick 2 blue marbles")
     print("3. Pick 1 red marble")
-    print("4. Pick 2 red marble")
+    print("4. Pick 1 blue marble")
 
 def misere():
     print("This will be Misere")
@@ -124,7 +138,7 @@ def main():
     scan = input()
     if scan == "1":
         print("You are playing Classic Red Blue Nim.")
-        standard(pile_1=pile_1, pile_2=pile_2)
+        standard(pile_1, pile_2)
     elif scan == "2":
         print("You are playing Misere Red Blue Nim.")
         misere()
