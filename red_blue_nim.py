@@ -16,6 +16,12 @@ def assign_rocks(num_red, num_blue):
 
     return pile_1, pile_2
 
+
+def computer_turn():
+    # Simulate computer's turn
+    # For simplicity, the computer will always pick the pile with the most rocks of the same color
+    print("COM is thinking...")
+
 def has_duplicates(data, color):
     new_list = []
     for d in data:
@@ -40,7 +46,7 @@ def remove_two_marbles(pile, color):
         pile.remove(color)
         print("Pile now has:", len(pile), "rocks left")
     else:
-        print("Not enough blue marbles")
+        print("Not enough", color ,"marbles")
 
 def remove_one_marble(pile, color):
     scan = print("You've picked 1 red marble")
@@ -54,16 +60,23 @@ def standard(pile_1, pile_2):
     print("This will be Standard")
 
     while True:
+
+        if (len(pile_1) == 0 or len(pile_2) == 0): #lose behavior
+            print("Pile is empty");
+            print("You lose!")
+            break
         print("Player 1: Your Turn")
         print("1. Choose Pile 1")
         print("2. Choose Pile 2")
+        print("3. Look at Pile")
         scan = input("Enter q to exit\n")
+
 
         if scan == 'q':
             break
         if scan == '1':
-            print("You've chosen Pile 1:\n")
-            player_choice()
+            print("You've chosen Pile 1:")
+            display_player_choice()
             scan = input("\n")
 
             if scan == '1':
@@ -76,10 +89,10 @@ def standard(pile_1, pile_2):
                 remove_one_marble(pile_1, 'blue')
             elif scan == 'q':
                 break
-            
+
         elif scan == '2':
             print("You've chosen Pile 2:\n")
-            player_choice()
+            display_player_choice()
             scan = input("\n")
 
             if scan == '1':
@@ -92,10 +105,13 @@ def standard(pile_1, pile_2):
                 remove_one_marble(pile_2, 'blue')
             elif scan == 'q':
                 break
+        elif scan == '3':
+            print("Pile 1: ", pile_1)
+            print("Pile 2: ", pile_2)
         else:
             scan = print("Invalid choice. Please choose 1 or 2\n")
 
-def player_choice():
+def display_player_choice():
     print("Select your choice")
     print("1. Pick 2 red marbles")
     print("2. Pick 2 blue marbles")
