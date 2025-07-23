@@ -1,6 +1,11 @@
 import sys
 import random
 
+player_marbles = []
+player_score = 0
+computer_marbles = []
+computer_score = 0
+
 def assign_rocks(num_red, num_blue):
 
     #total_rocks is a list of 'red' and 'blue' strings
@@ -16,6 +21,15 @@ def assign_rocks(num_red, num_blue):
 
     return pile_1, pile_2
 
+def calculate_standard_score(marbles, score):
+    for marble in marbles:
+        if marble == 'red':
+            # print("red is in")
+            score -= 2
+        elif marble == 'blue':
+            # print("blue is in")
+            score -= 1
+    return score
 
 def computer_turn():
     # Simulate computer's turn
@@ -39,18 +53,21 @@ def has_duplicates(data, color):
     
     # return any(count >= 2 for count in counts.values())
 
-def remove_two_marbles(pile, color):
+def remove_two_marbles(pile, color, player):
     scan = print("You've picked 2", color ,"marbles")
     if (has_duplicates(pile, color)):
+        player.append(color)
+        player.append(color)
         pile.remove(color)
         pile.remove(color)
         print("Pile now has:", len(pile), "rocks left")
     else:
         print("Not enough", color ,"marbles")
 
-def remove_one_marble(pile, color):
+def remove_one_marble(pile, color, player):
     scan = print("You've picked 1 red marble")
     if (color in pile):
+        player.append(color)
         pile.remove(color)
         print("Pile now has:", len(pile), "rocks left")
     else:
@@ -58,17 +75,20 @@ def remove_one_marble(pile, color):
 
 def standard(pile_1, pile_2):
     print("This will be Standard")
-
+    global player_score
     while True:
 
         if (len(pile_1) == 0 or len(pile_2) == 0): #lose behavior
+            player_score = calculate_standard_score(player_marbles, player_score)
             print("Pile is empty");
             print("You lose!")
+            print("Player score is", player_score )
             break
         print("Player 1: Your Turn")
         print("1. Choose Pile 1")
         print("2. Choose Pile 2")
         print("3. Look at Pile")
+        print("4. Number of Points")
         scan = input("Enter q to exit\n")
 
 
@@ -80,34 +100,35 @@ def standard(pile_1, pile_2):
             scan = input("\n")
 
             if scan == '1':
-                remove_two_marbles(pile_1, 'red')
+                remove_two_marbles(pile_1, 'red', player_marbles)
             elif scan == '2':
-                remove_two_marbles(pile_1, 'blue')
+                remove_two_marbles(pile_1, 'blue', player_marbles)
             elif scan == '3':
-                remove_one_marble(pile_1, 'red')
+                remove_one_marble(pile_1, 'red', player_marbles)
             elif scan == '4':
-                remove_one_marble(pile_1, 'blue')
+                remove_one_marble(pile_1, 'blue', player_marbles)
             elif scan == 'q':
                 break
-
         elif scan == '2':
             print("You've chosen Pile 2:\n")
             display_player_choice()
             scan = input("\n")
 
             if scan == '1':
-                remove_two_marbles(pile_2, 'red')
+                remove_two_marbles(pile_2, 'red', player_marbles)
             elif scan == '2':
-                remove_two_marbles(pile_2, 'blue')
+                remove_two_marbles(pile_2, 'blue', player_marbles)
             elif scan == '3':
-                remove_one_marble(pile_2, 'red')
+                remove_one_marble(pile_2, 'red', player_marbles)
             elif scan == '4':
-                remove_one_marble(pile_2, 'blue')
+                remove_one_marble(pile_2, 'blue', player_marbles)
             elif scan == 'q':
                 break
         elif scan == '3':
             print("Pile 1: ", pile_1)
             print("Pile 2: ", pile_2)
+        elif scan == '4':
+            print("Player Marbles:\n",player_marbles)
         else:
             scan = print("Invalid choice. Please choose 1 or 2\n")
 
@@ -139,6 +160,7 @@ def main():
         sys.exit(1)
 
     total_rocks = num_red + num_blue
+
     if total_rocks < 16:
         print("Warning: Total number of rocks should be at least 16 for both piles to have a minimum of 8.")
         sys.exit(1)
