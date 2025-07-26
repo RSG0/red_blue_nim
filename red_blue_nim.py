@@ -58,6 +58,29 @@ def computer_turn():
     time.sleep(2); #will be removed in final version
     print("COM has chosen")
 
+#REMINDER: beta should be pos infinity , and alpha should be neg infinity for worst possible options
+def minimax(pos, depth, alpha, beta, is_maximizing):
+    if depth == 0 or pos == 'quit':
+        return 1; # should return the position of either 1-4
+    if is_maximizing: # max should be trying to get the lowest possible numbewr
+        maxEval = -float('inf') #
+        for child in pos:
+            eval = minimax(child, depth - 1, alpha, beta, False) # switching to min
+            maxEval = max(maxEval, eval)
+            alpha = max(alpha, eval)
+            if beta <= alpha:
+                break
+        return maxEval
+    else: #min
+        minEval = float('inf')
+        for child in pos:
+            eval = minimax(child, depth - 1, alpha, beta, True) # switching to max
+            maxEval = min(maxEval, eval)
+            alpha = min(beta, eval)
+            if beta <= alpha: # pruning occurs
+                break
+        return minEval
+
 def has_duplicates(data, color):
     new_list = []
     for d in data:
