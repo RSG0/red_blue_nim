@@ -1,5 +1,6 @@
 import sys
 import random
+import time
 
 player_marbles = []
 player_score = 0
@@ -21,6 +22,25 @@ def assign_rocks(num_red, num_blue):
 
     return pile_1, pile_2
 
+def player_choosing_marbles(pile, choice):
+    if choice == '1':
+        remove_two_marbles(pile, 'red', player_marbles)
+        computer_turn()
+    elif choice == '2':
+        remove_two_marbles(pile, 'blue', player_marbles)
+        computer_turn()
+    elif choice == '3':
+        remove_one_marble(pile, 'red', player_marbles)
+        computer_turn()
+    elif choice == '4':
+        remove_one_marble(pile, 'blue', player_marbles)
+        computer_turn()
+    elif choice == 'q':
+        return 'quit'
+    else:
+        print("Invalid choice.")
+
+
 def calculate_standard_score(marbles, score):
     for marble in marbles:
         if marble == 'red':
@@ -35,6 +55,8 @@ def computer_turn():
     # Simulate computer's turn
     # For simplicity, the computer will always pick the pile with the most rocks of the same color
     print("COM is thinking...")
+    time.sleep(2); #will be removed in final version
+    print("COM has chosen")
 
 def has_duplicates(data, color):
     new_list = []
@@ -65,7 +87,7 @@ def remove_two_marbles(pile, color, player):
         print("Not enough", color ,"marbles")
 
 def remove_one_marble(pile, color, player):
-    scan = print("You've picked 1 red marble")
+    print("You've picked 1 red marble")
     if (color in pile):
         player.append(color)
         pile.remove(color)
@@ -84,6 +106,7 @@ def standard(pile_1, pile_2):
             print("You lose!")
             print("Player score is", player_score )
             break
+
         print("Player 1: Your Turn")
         print("1. Choose Pile 1")
         print("2. Choose Pile 2")
@@ -94,40 +117,22 @@ def standard(pile_1, pile_2):
 
         if scan == 'q':
             break
-        if scan == '1':
+        if scan == '1': # choose pile 1
             print("You've chosen Pile 1:")
             display_player_choice()
-            scan = input("\n")
-
-            if scan == '1':
-                remove_two_marbles(pile_1, 'red', player_marbles)
-            elif scan == '2':
-                remove_two_marbles(pile_1, 'blue', player_marbles)
-            elif scan == '3':
-                remove_one_marble(pile_1, 'red', player_marbles)
-            elif scan == '4':
-                remove_one_marble(pile_1, 'blue', player_marbles)
-            elif scan == 'q':
+            choice = input("\n")
+            if player_choosing_marbles(pile_1, choice) == 'quit':
                 break
-        elif scan == '2':
+        elif scan == '2': # choose pile 2
             print("You've chosen Pile 2:\n")
             display_player_choice()
-            scan = input("\n")
-
-            if scan == '1':
-                remove_two_marbles(pile_2, 'red', player_marbles)
-            elif scan == '2':
-                remove_two_marbles(pile_2, 'blue', player_marbles)
-            elif scan == '3':
-                remove_one_marble(pile_2, 'red', player_marbles)
-            elif scan == '4':
-                remove_one_marble(pile_2, 'blue', player_marbles)
-            elif scan == 'q':
+            choice = input("\n")
+            if player_choosing_marbles(pile_2, choice) == 'quit':
                 break
-        elif scan == '3':
+        elif scan == '3': # display pile
             print("Pile 1: ", pile_1)
             print("Pile 2: ", pile_2)
-        elif scan == '4':
+        elif scan == '4': # display score
             print("Player Marbles:\n",player_marbles)
         else:
             scan = print("Invalid choice. Please choose 1 or 2\n")
