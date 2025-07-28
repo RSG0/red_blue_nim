@@ -7,6 +7,77 @@ player_score = 0
 computer_marbles = []
 computer_score = 0
 
+class GameState:
+    def __init__(self, pile, player_marbles, computer_marbles, is_max_turn):
+        self.pile = pile.copy()
+        self.player_marbles = player_marbles.copy()
+        self.computer_marbles = computer_marbles.copy()
+        self.is_max_turn = is_max_turn # if True, than computer's turn
+    
+    def get_score(self): # for minimax algo
+        score = 0
+        for marble in self.player_marbles: # less is better for player
+            if marble == 'red':
+                score -= 2
+            elif marble == 'blue':
+                score -= 3
+        for marble in self.computer_marbles:
+            if marble == 'red':
+                score += 2
+            elif marble == 'blue':
+                score += 3
+        return score;
+
+    def is_terminal(self): # returns True is pile is empty         
+        return len(self.pile) == 0 
+        
+def try_move(state, amount, color):
+    new_pile = state.pile.copy()
+    new_player = state.player_marbles.copy()
+    new_computer = state.computer_marbles.copy()
+
+    try:
+        if amount == '2':
+            if new_pile.count(color) >= 2:
+                new_pile.remove(color)
+                new_pile.remove(color)
+                if state.is_max_turn:
+                    new_computer += [color, color]
+                else:
+                    new_player += [color, color]
+            else:
+                return None
+        elif amount == '1':
+            if color in new_pile:
+                new_pile.remove(color)
+                if state.is_max_turn:
+                    new_computer.append(color)
+                else:
+                    new_player.append(color)
+            else:
+                return None
+        return GameState(new_pile, new_player, new_computer, not state.is_max_turn)
+    except:
+        return None
+
+def generate_moves(state):
+    moves = []
+    pile = state.pile
+
+    move_order = [
+        ('2', 'red'),   # 2 red
+        ('2', 'blue'),  # 2 blue
+        ('1', 'red'),   # 1 red
+        ('1', 'blue')   # 1 blue
+    ]
+
+    for amount, color in move_order:
+        new_state = try_move(state, amount, color)
+        if new_state:
+            moves.append((amount, color, new_state))
+    return moves
+
+
 def assign_rocks(num_red, num_blue):
 
     #total_rocks is a list of 'red' and 'blue' strings
@@ -22,19 +93,19 @@ def assign_rocks(num_red, num_blue):
 
     return pile_1, pile_2
 
-def player_choosing_marbles(pile, choice):
+def player_choosing_marbles(pile, choice, pile_name):
     if choice == '1':
-        remove_two_marbles(pile, 'red', player_marbles)
-        computer_turn()
+        if (remove_two_marbles(pile, 'red', player_marbles) != -1):
+            computer_turn(pile, pile_name)
     elif choice == '2':
-        remove_two_marbles(pile, 'blue', player_marbles)
-        computer_turn()
+        if (remove_two_marbles(pile, 'blue', player_marbles) != -1):
+            computer_turn(pile, pile_name)
     elif choice == '3':
-        remove_one_marble(pile, 'red', player_marbles)
-        computer_turn()
+        if (remove_one_marble(pile, 'red', player_marbles) != -1 ):
+            computer_turn(pile, pile_name)
     elif choice == '4':
-        remove_one_marble(pile, 'blue', player_marbles)
-        computer_turn()
+        if (remove_one_marble(pile, 'blue', player_marbles) != -1):
+            computer_turn(pile, pile_name)
     elif choice == 'q':
         return 'quit'
     else:
@@ -51,35 +122,54 @@ def calculate_standard_score(marbles, score):
             score -= 1
     return score
 
-def computer_turn():
-    # Simulate computer's turn
-    # For simplicity, the computer will always pick the pile with the most rocks of the same color
+def computer_turn(pile_contents, pile_name):
     print("COM is thinking...")
-    time.sleep(2); #will be removed in final version
+    # time.sleep(2); #will be removed in final version
+    state = GameState(pile_contents, player_marbles, computer_marbles, True)
+    _, best_move = minimax(state, depth=4, alpha=-float('inf'), beta=float('inf'))
+
+    if best_move is None:
+        print("COM cannot make a move.")
+        return
+
+    amount, color = best_move
+    print(f"COM chooses to pick {amount} {color} marble(s) from {pile_name}" ) #HERE
+
+    if amount == '2':
+        remove_two_marbles(pile_contents, color, computer_marbles)
+    elif amount == '1':
+        remove_one_marble(pile_contents, color, computer_marbles)
     print("COM has chosen")
 
 #REMINDER: beta should be pos infinity , and alpha should be neg infinity for worst possible options
-def minimax(pos, depth, alpha, beta, is_maximizing):
-    if depth == 0 or pos == 'quit':
-        return 1; # should return the position of either 1-4
-    if is_maximizing: # max should be trying to get the lowest possible numbewr
-        maxEval = -float('inf') #
-        for child in pos:
-            eval = minimax(child, depth - 1, alpha, beta, False) # switching to min
-            maxEval = max(maxEval, eval)
-            alpha = max(alpha, eval)
+def minimax(state, depth, alpha, beta):
+    if depth == 0 or state.is_terminal():
+        return state.get_score(), None
+
+    if state.is_max_turn:
+        max_eval = -float('inf')
+        best_move = None
+        for amount, color, new_state in generate_moves(state):
+            eval_score, _ = minimax(new_state, depth - 1, alpha, beta)
+            if eval_score > max_eval:
+                max_eval = eval_score
+                best_move = (amount, color)
+            alpha = max(alpha, eval_score)
             if beta <= alpha:
                 break
-        return maxEval
-    else: #min
-        minEval = float('inf')
-        for child in pos:
-            eval = minimax(child, depth - 1, alpha, beta, True) # switching to max
-            maxEval = min(maxEval, eval)
-            alpha = min(beta, eval)
-            if beta <= alpha: # pruning occurs
+        return max_eval, best_move
+    else:
+        min_eval = float('inf')
+        best_move = None
+        for amount, color, new_state in generate_moves(state):
+            eval_score, _ = minimax(new_state, depth - 1, alpha, beta)
+            if eval_score < min_eval:
+                min_eval = eval_score
+                best_move = (amount, color)
+            beta = min(beta, eval_score)
+            if beta <= alpha:
                 break
-        return minEval
+        return min_eval, best_move
 
 def has_duplicates(data, color):
     new_list = []
@@ -99,24 +189,28 @@ def has_duplicates(data, color):
     # return any(count >= 2 for count in counts.values())
 
 def remove_two_marbles(pile, color, player):
-    scan = print("You've picked 2", color ,"marbles")
+    # scan = print("You've picked 2", color ,"marbles")
     if (has_duplicates(pile, color)):
         player.append(color)
         player.append(color)
         pile.remove(color)
         pile.remove(color)
         print("Pile now has:", len(pile), "rocks left")
+        return;
     else:
-        print("Not enough", color ,"marbles")
+        print("Not enough", color ,"marbles. Try Again!")
+        return -1;
 
 def remove_one_marble(pile, color, player):
-    print("You've picked 1 red marble")
+    # print("You've picked 1 red marble")
     if (color in pile):
         player.append(color)
         pile.remove(color)
         print("Pile now has:", len(pile), "rocks left")
+        return
     else:
         print("Not enough", color, "marbles")
+        return -1;
 
 def standard(pile_1, pile_2):
     print("This will be Standard")
@@ -144,13 +238,13 @@ def standard(pile_1, pile_2):
             print("You've chosen Pile 1:")
             display_player_choice()
             choice = input("\n")
-            if player_choosing_marbles(pile_1, choice) == 'quit':
+            if player_choosing_marbles(pile_1, choice, "Pile 1") == 'quit':
                 break
         elif scan == '2': # choose pile 2
             print("You've chosen Pile 2:\n")
             display_player_choice()
             choice = input("\n")
-            if player_choosing_marbles(pile_2, choice) == 'quit':
+            if player_choosing_marbles(pile_2, choice, "Pile 2") == 'quit':
                 break
         elif scan == '3': # display pile
             print("Pile 1: ", pile_1)
