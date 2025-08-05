@@ -227,44 +227,64 @@ def remove_one_marble(pile, color, player):
 def standard(pile_1, pile_2):
     print("This will be Standard")
     global player_score
+    player_turn = True # Track turns: True = player, False = computer
     while True:
-
-        if (len(pile_1) == 0 or len(pile_2) == 0): #lose behavior
-            player_score = calculate_standard_score(player_marbles, player_score)
-            print("Pile is empty");
-            print("You lose!")
-            print("Player score is", player_score )
+        if (len(pile_1) == 0 or len(pile_2) == 0):
+            if player_turn:
+                # Player just moved and emptied a pile => Player wins!
+                player_score = calculate_standard_score(player_marbles, player_score)
+                print("Pile is empty.")
+                print("You win!")
+                print("Player score is", player_score)
+            else:  #lose behavior
+                player_score = calculate_standard_score(player_marbles, player_score)
+                print("Pile is empty");
+                print("You lose!")
+                print("Player score is", player_score )
             break
 
-        print("Player 1: Your Turn")
-        print("1. Choose Pile 1")
-        print("2. Choose Pile 2")
-        print("3. Look at Pile")
-        print("4. Number of Points")
-        scan = input("Enter q to exit\n")
+        if player_turn:
+            print("Player 1: Your Turn")
+            print("1. Choose Pile 1")
+            print("2. Choose Pile 2")
+            print("3. Look at Pile")
+            print("4. Number of Points")
+            scan = input("Enter q to exit\n")
 
 
-        if scan == 'q':
-            break
-        if scan == '1': # choose pile 1
-            print("You've chosen Pile 1:")
-            display_player_choice()
-            choice = input("\n")
-            if player_choosing_marbles(pile_1, choice, "Pile 1") == 'quit':
+            if scan == 'q':
                 break
-        elif scan == '2': # choose pile 2
-            print("You've chosen Pile 2:\n")
-            display_player_choice()
-            choice = input("\n")
-            if player_choosing_marbles(pile_2, choice, "Pile 2") == 'quit':
-                break
-        elif scan == '3': # display pile
-            print("Pile 1: ", pile_1)
-            print("Pile 2: ", pile_2)
-        elif scan == '4': # display score
-            print("Player Marbles:\n",player_marbles)
+            if scan == '1': # choose pile 1
+                print("You've chosen Pile 1:")
+                display_player_choice()
+                choice = input("\n")
+                if player_choosing_marbles(pile_1, choice, "Pile 1") == 'quit':
+                    break
+                else:
+                    player_turn = False  # Switch to computer
+            elif scan == '2': # choose pile 2
+                print("You've chosen Pile 2:\n")
+                display_player_choice()
+                choice = input("\n")
+                if player_choosing_marbles(pile_2, choice, "Pile 2") == 'quit':
+                    break
+                else:
+                    player_turn = False  # Switch to computer
+
+            elif scan == '3': # display pile
+                print("Pile 1: ", pile_1)
+                print("Pile 2: ", pile_2)
+            elif scan == '4': # display score
+                print("Player Marbles:\n",player_marbles)
+            else:
+                scan = print("Invalid choice. Please choose 1 or 2\n")
         else:
-            scan = print("Invalid choice. Please choose 1 or 2\n")
+            # Computer's turn
+            if len(pile_1) >= 1:
+                computer_turn(pile_1, "Pile 1", misere=True)
+            elif len(pile_2) >= 1:
+                computer_turn(pile_2, "Pile 2", misere=True)
+            player_turn = True  # Switch back to player
 
 def display_player_choice():
     print("Select your choice")
@@ -280,7 +300,7 @@ def misere(pile_1, pile_2):
 
     while True:
         if len(pile_1) == 0 or len(pile_2) == 0:
-            if player_turn:
+            if player_turn is True:
                 # Player just moved and emptied a pile => Player wins!
                 player_score = calculate_misere_score(player_marbles, player_score)
                 print("Pile is empty.")
@@ -334,7 +354,6 @@ def misere(pile_1, pile_2):
             elif len(pile_2) >= 1:
                 computer_turn(pile_2, "Pile 2", misere=True)
             player_turn = True  # Switch back to player
-
 
 def main():
 
