@@ -276,44 +276,65 @@ def display_player_choice():
 def misere(pile_1, pile_2):
     print("This will be Misere")
     global player_score
+    player_turn = True  # Track turns: True = player, False = computer
+
     while True:
-
-        if (len(pile_1) == 0 or len(pile_2) == 0):
-            player_score = calculate_misere_score(player_marbles, player_score)
-            print("Pile is empty");
-            print("You lose!")
-            print("Player score is", player_score )
+        if len(pile_1) == 0 or len(pile_2) == 0:
+            if player_turn:
+                # Player just moved and emptied a pile => Player wins!
+                player_score = calculate_misere_score(player_marbles, player_score)
+                print("Pile is empty.")
+                print("You win!")
+                print("Player score is", player_score)
+            else:
+                # Computer just moved and emptied a pile => Computer wins!
+                player_score = calculate_misere_score(player_marbles, player_score)
+                print("Pile is empty.")
+                print("You lose!")
+                print("Player score is", player_score)
             break
 
-        print("Player 1: Your Turn")
-        print("1. Choose Pile 1")
-        print("2. Choose Pile 2")
-        print("3. Look at Pile")
-        print("4. Number of Points")
-        scan = input("Enter q to exit\n")
+        if player_turn:
+            print("Player 1: Your Turn")
+            print("1. Choose Pile 1")
+            print("2. Choose Pile 2")
+            print("3. Look at Pile")
+            print("4. Number of Points")
+            scan = input("Enter q to exit\n")
 
-
-        if scan == 'q':
-            break
-        if scan == '1': # choose pile 1
-            print("You've chosen Pile 1:")
-            display_player_choice()
-            choice = input("\n")
-            if player_choosing_marbles(pile_1, choice, "Pile 1", True) == 'quit':
+            if scan == 'q':
                 break
-        elif scan == '2': # choose pile 2
-            print("You've chosen Pile 2:\n")
-            display_player_choice()
-            choice = input("\n")
-            if player_choosing_marbles(pile_2, choice, "Pile 2", True) == 'quit':
-                break
-        elif scan == '3': # display pile
-            print("Pile 1: ", pile_1)
-            print("Pile 2: ", pile_2)
-        elif scan == '4': # display score
-            print("Player Marbles:\n",player_marbles)
+            if scan == '1':
+                print("You've chosen Pile 1:")
+                display_player_choice()
+                choice = input("\n")
+                if player_choosing_marbles(pile_1, choice, "Pile 1", misere=True) == 'quit':
+                    break
+                else:
+                    player_turn = False  # Switch to computer
+            elif scan == '2':
+                print("You've chosen Pile 2:")
+                display_player_choice()
+                choice = input("\n")
+                if player_choosing_marbles(pile_2, choice, "Pile 2", misere=True) == 'quit':
+                    break
+                else:
+                    player_turn = False  # Switch to computer
+            elif scan == '3':
+                print("Pile 1: ", pile_1)
+                print("Pile 2: ", pile_2)
+            elif scan == '4':
+                print("Player Marbles:\n", player_marbles)
+            else:
+                print("Invalid choice. Please choose 1 or 2\n")
         else:
-            scan = print("Invalid choice. Please choose 1 or 2\n")
+            # Computer's turn
+            if len(pile_1) >= 1:
+                computer_turn(pile_1, "Pile 1", misere=True)
+            elif len(pile_2) >= 1:
+                computer_turn(pile_2, "Pile 2", misere=True)
+            player_turn = True  # Switch back to player
+
 
 def main():
 
@@ -341,13 +362,21 @@ def main():
     player_first_player = "default"   # default 
     
     
-    #version
-    if ( len(args) > 2 and args[2] == "-m"):
-        version = "-m"
-    #first player *INCOMPLETE*
-    if (len(args) > 3 and args[3] == "-h"):
-        player_first_player = "-h"
-    #depth *INCOMPLETE*
+    i = 2  # Start after num-red and num-blue
+    while i < len(args):
+        if args[i] == "-m":
+            version = "-m"
+        elif args[i] == "-h":
+            player_first_player = "-h"
+        # elif args[i] == "-d": *INCOMPLETE*
+        #     if i + 1 < len(args):
+        #         depth = int(args[i + 1])
+        #         i += 1
+        else:
+            print(f"Unknown argument: {args[i]}")
+            sys.exit(1)
+        i += 1
+
 
     pile_1, pile_2 = assign_rocks(num_red, num_blue)
 
@@ -357,13 +386,13 @@ def main():
     print("Welcome to Red Blue Nim.\n")
 
     if version == "standard":
-        if player_first_player == "-h":
+        if player_first_player != "-h":
             computer_turn(pile_1, "Pile 1", misere=False)
             standard(pile_1, pile_2)
         else:
             standard(pile_1, pile_2)
     elif version == "-m":
-        if player_first_player == "-h":
+        if player_first_player != "-h":
             computer_turn(pile_1, "Pile 1", misere=True)
             misere(pile_1, pile_2)
         else:
