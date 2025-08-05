@@ -83,8 +83,6 @@ def generate_moves(state, misere=False): # assume misere is false by default
         if new_state:
             moves.append((amount, color, new_state))
     return moves
-
-
 def assign_rocks(num_red, num_blue):
 
     #total_rocks is a list of 'red' and 'blue' strings
@@ -94,12 +92,11 @@ def assign_rocks(num_red, num_blue):
     # Randomly divide into two piles
     group_pile_size = random.randint(8, 20)
     pile_1 = total_rocks[:group_pile_size]
-    print("Pile 1:", pile_1)
+    # print("Pile 1:", pile_1)
     pile_2 = total_rocks[group_pile_size:]
-    print("Pile 2:", pile_2)
+    # print("Pile 2:", pile_2)
 
     return pile_1, pile_2
-
 def player_choosing_marbles(pile, choice, pile_name, misere=False):
     if choice == '1':
         if (remove_two_marbles(pile, 'red', player_marbles) != -1):
@@ -117,8 +114,6 @@ def player_choosing_marbles(pile, choice, pile_name, misere=False):
         return 'quit'
     else:
         print("Invalid choice.")
-
-
 def calculate_standard_score(marbles, score):
     for marble in marbles:
         if marble == 'red':
@@ -321,13 +316,17 @@ def misere(pile_1, pile_2):
             scan = print("Invalid choice. Please choose 1 or 2\n")
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python red_blue_nim.py <num-red> <num-blue>")
+
+    args = sys.argv[1:] # will skip red_blue_num.py
+
+    if len(args) < 2:
+        print(len(args), "length of arguments")
+        print("Usage: python red_blue_nim.py <num-red> <num-blue> [-m] [-h] [-d <depth>]")
         sys.exit(1)
+
     try:
-        num_red = int(sys.argv[1])      #string that represents command land argument
-        num_blue = int(sys.argv[2])     #string that represents command land argument
-        # need to add misere
+        num_red = int(args[0])      
+        num_blue = int(args[1])    
     except:
         print("Error: num-red and num-blue must be integers.")
         sys.exit(1)
@@ -337,21 +336,37 @@ def main():
     if total_rocks < 16:
         print("Warning: Total number of rocks should be at least 16 for both piles to have a minimum of 8.")
         sys.exit(1)
+    
+    version = "standard"      # default
+    player_first_player = "default"   # default 
+    
+    
+    #version
+    if ( len(args) > 2 and args[2] == "-m"):
+        version = "-m"
+    #first player *INCOMPLETE*
+    if (len(args) > 3 and args[3] == "-h"):
+        player_first_player = "-h"
+    #depth *INCOMPLETE*
 
     pile_1, pile_2 = assign_rocks(num_red, num_blue)
 
     print("Pile 1 has", len(pile_1), "rocks:", pile_1)
     print("Pile 2 has", len(pile_2), "rocks:", pile_2)
 
-    print("Welcome to Red Blue Nim. Select your Gamemode")
-    print("1. Classic")
-    print("2. Misere")
-    scan = input()
-    if scan == "1":
-        print("You are playing Classic Red Blue Nim.")
-        standard(pile_1, pile_2)
-    elif scan == "2":
-        print("You are playing Misere Red Blue Nim.")
-        misere(pile_1, pile_2)
+    print("Welcome to Red Blue Nim.\n")
+
+    if version == "standard":
+        if player_first_player == "-h":
+            computer_turn(pile_1, "Pile 1", misere=False)
+            standard(pile_1, pile_2)
+        else:
+            standard(pile_1, pile_2)
+    elif version == "-m":
+        if player_first_player == "-h":
+            computer_turn(pile_1, "Pile 1", misere=True)
+            misere(pile_1, pile_2)
+        else:
+            misere(pile_1, pile_2)
 if __name__ == "__main__":
     main()
