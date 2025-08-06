@@ -136,7 +136,7 @@ def calculate_misere_score(marbles, score):
 def computer_turn(pile_contents, pile_name, misere=False):
     print("COM is thinking...")
     state = GameState(pile_contents, player_marbles, computer_marbles, True)
-    _, best_move = minimax(state, depth=4, alpha=-float('inf'), beta=float('inf'), misere=misere)
+    _, best_move = minimax(state, depth=100, alpha=-float('inf'), beta=float('inf'), misere=misere)
 
     if best_move is None:
         print("COM cannot make a move.")
@@ -244,15 +244,10 @@ def standard(pile_1, pile_2):
             break
 
         if player_turn:
-            print("Player 1: Your Turn")
-            print("1. Choose Pile 1")
-            print("2. Choose Pile 2")
-            print("3. Look at Pile")
-            print("4. Number of Points")
+            display_player_options()
             scan = input("Enter q to exit\n")
 
-
-            if scan == 'q':
+            if scan == 'q': # Quit Game
                 break
             if scan == '1': # choose pile 1
                 print("You've chosen Pile 1:")
@@ -270,21 +265,27 @@ def standard(pile_1, pile_2):
                     break
                 else:
                     player_turn = False  # Switch to computer
-
             elif scan == '3': # display pile
                 print("Pile 1: ", pile_1)
                 print("Pile 2: ", pile_2)
             elif scan == '4': # display score
                 print("Player Marbles:\n",player_marbles)
             else:
-                scan = print("Invalid choice. Please choose 1 or 2\n")
+                scan = print("Invalid choice. Try Again\n")
         else:
             # Computer's turn
-            if len(pile_1) >= 1:
+            if len(pile_1) >= 1: # If pile 1 is not empty
                 computer_turn(pile_1, "Pile 1", misere=True)
-            elif len(pile_2) >= 1:
+            elif len(pile_2) >= 1: # If pile 2 is not empty
                 computer_turn(pile_2, "Pile 2", misere=True)
-            player_turn = True  # Switch back to player
+            player_turn = True 
+
+def display_player_options():
+    print("Player 1: Your Turn")
+    print("1. Choose Pile 1")
+    print("2. Choose Pile 2")
+    print("3. Look at Pile")
+    print("4. Number of Points") # Switch back to player
 
 def display_player_choice():
     print("Select your choice")
@@ -315,11 +316,7 @@ def misere(pile_1, pile_2):
             break
 
         if player_turn:
-            print("Player 1: Your Turn")
-            print("1. Choose Pile 1")
-            print("2. Choose Pile 2")
-            print("3. Look at Pile")
-            print("4. Number of Points")
+            display_player_options()
             scan = input("Enter q to exit\n")
 
             if scan == 'q':
