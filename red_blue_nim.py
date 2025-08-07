@@ -141,8 +141,6 @@ def calculate_misere_score(marbles, score):
 def computer_turn(pile_contents, pile_name, misere=False):
     print("COM is thinking...")
     state = GameState(pile_contents, player_marbles, computer_marbles, True)
-    # dynamic_depth = eval_fn(state)
-    # # _, best_move = minimax(state, depth=dynamic_depth, alpha=-float('inf'), beta=float('inf'), misere=misere)
 
     if is_custom_eval_used is True:
         print("Custom Eval is being used")
@@ -388,22 +386,23 @@ def misere(pile_1, pile_2):
                 computer_turn(pile_2, "Pile 2", misere=True)
             player_turn = True  # Switch back to player
 
-def eval_fn(state, max_depth=10):
+def eval_fn(state, max_depth=50):
     red_count = state.pile.count("red")
     blue_count = state.pile.count("blue")
     total_score_potential = red_count * 2 + blue_count * 3
 
     if total_score_potential >= 60:
-        return min(6, max_depth)
+        return min(20, max_depth)
     elif total_score_potential >= 30:
-        return min(8, max_depth)
-    else:
         return min(10, max_depth)
+    else:
+        return min(5, max_depth)
 
 
 def main():
 
     args = sys.argv[1:] # will skip red_blue_num.py
+    global is_custom_eval_used
 
     if len(args) < 2:
         print(len(args), "length of arguments")

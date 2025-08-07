@@ -88,6 +88,14 @@ d: depth of the minimax algorithm (default 100)
 
 To run the code open up the terminal and insert this for example:
 python red_blue_nim.py 10 10 -m -h 
+python red_blue_nim.py 10 10 -m -d
 python red_blue_nim.py 10 12 -m -h -d 
 
+
+How the eval function is utilized:
+The eval function calculates the ideal depth limit by accepting the game state object
+and max_depth. We than calculate the red_count and blue_count of the marbles in the piles
+and than measure the max score potential and depending on how many points are available are in the game
+we with return with a deep or shadow depth. The more points that are available the deeper the depth, 
+the less points the less deep the depth.
 
