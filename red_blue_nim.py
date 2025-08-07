@@ -7,6 +7,9 @@ player_score = 0
 computer_marbles = []
 computer_score = 0
 
+is_custom_eval_used = False
+
+
 class GameState:
     def __init__(self, pile, player_marbles, computer_marbles, is_max_turn):
         self.pile = pile.copy()
@@ -100,28 +103,30 @@ def assign_rocks(num_red, num_blue):
 def player_choosing_marbles(pile, choice, pile_name, misere=False):
     if choice == '1':
         if (remove_two_marbles(pile, 'red', player_marbles) != -1):
-            computer_turn(pile, pile_name, misere)
+            return 'ok'
     elif choice == '2':
         if (remove_two_marbles(pile, 'blue', player_marbles) != -1):
-            computer_turn(pile, pile_name, misere)
+            return 'ok'
     elif choice == '3':
         if (remove_one_marble(pile, 'red', player_marbles) != -1 ):
-            computer_turn(pile, pile_name, misere)
+            return 'ok'
     elif choice == '4':
         if (remove_one_marble(pile, 'blue', player_marbles) != -1):
-            computer_turn(pile, pile_name, misere)
+            return 'ok'
     elif choice == 'q':
         return 'quit'
     else:
         print("Invalid choice.")
+    return 'retry'
+
 def calculate_standard_score(marbles, score):
     for marble in marbles:
         if marble == 'red':
             # print("red is in")
-            score -= 2
+            score += 2
         elif marble == 'blue':
             # print("blue is in")
-            score -= 1
+            score += 1
     return score
 def calculate_misere_score(marbles, score):
     for marble in marbles:
@@ -136,7 +141,16 @@ def calculate_misere_score(marbles, score):
 def computer_turn(pile_contents, pile_name, misere=False):
     print("COM is thinking...")
     state = GameState(pile_contents, player_marbles, computer_marbles, True)
-    _, best_move = minimax(state, depth=100, alpha=-float('inf'), beta=float('inf'), misere=misere)
+    # dynamic_depth = eval_fn(state)
+    # # _, best_move = minimax(state, depth=dynamic_depth, alpha=-float('inf'), beta=float('inf'), misere=misere)
+
+    if is_custom_eval_used is True:
+        print("Custom Eval is being used")
+        _, best_move = minimax(state, depth=100, alpha=-float('inf'), beta=float('inf'), misere=misere, eval_fn=eval_fn)
+    else:
+        print("Standard Eval is being used") # Standard depth is 100
+        _, best_move = minimax(state, depth=100, alpha=-float('inf'), beta=float('inf'), misere=misere)
+
 
     if best_move is None:
         print("COM cannot make a move.")
@@ -147,14 +161,18 @@ def computer_turn(pile_contents, pile_name, misere=False):
 
     if amount == '2':
         remove_two_marbles(pile_contents, color, computer_marbles)
+        print("COM has chosen")
     elif amount == '1':
         remove_one_marble(pile_contents, color, computer_marbles)
-    print("COM has chosen")
+        print("COM has chosen")
+
 
 
 #REMINDER: beta should be pos infinity , and alpha should be neg infinity for worst possible options
-def minimax(state, depth, alpha, beta, misere=False):
+def minimax(state, depth, alpha, beta, misere=False, eval_fn=None):
     if depth == 0 or state.is_terminal():
+        if eval_fn: # if eval_fn is True , use the custom eval function
+            return eval_fn(state.pile, state.player_score, state.computer_score), None
         return state.get_score(), None
 
     if state.is_max_turn:
@@ -227,20 +245,26 @@ def remove_one_marble(pile, color, player):
 def standard(pile_1, pile_2):
     print("This will be Standard")
     global player_score
+    global computer_score
+
     player_turn = True # Track turns: True = player, False = computer
     while True:
         if (len(pile_1) == 0 or len(pile_2) == 0):
             if player_turn:
                 # Player just moved and emptied a pile => Player wins!
                 player_score = calculate_standard_score(player_marbles, player_score)
+                computer_score = calculate_standard_score(computer_marbles, computer_score)
                 print("Pile is empty.")
                 print("You win!")
                 print("Player score is", player_score)
+                print("Computer score is", -computer_score)
             else:  #lose behavior
                 player_score = calculate_standard_score(player_marbles, player_score)
+                computer_score = calculate_standard_score(computer_marbles, computer_score)
                 print("Pile is empty");
                 print("You lose!")
-                print("Player score is", player_score )
+                print("Player score is", -player_score )
+                print("Computer score is", computer_score)
             break
 
         if player_turn:
@@ -253,18 +277,20 @@ def standard(pile_1, pile_2):
                 print("You've chosen Pile 1:")
                 display_player_choice()
                 choice = input("\n")
-                if player_choosing_marbles(pile_1, choice, "Pile 1") == 'quit':
+                result = player_choosing_marbles(pile_1, choice, "Pile 1")
+                if result == 'quit':
                     break
-                else:
-                    player_turn = False  # Switch to computer
+                elif result == 'ok':
+                    player_turn = False  # only switch turn if valid move
             elif scan == '2': # choose pile 2
                 print("You've chosen Pile 2:\n")
                 display_player_choice()
                 choice = input("\n")
-                if player_choosing_marbles(pile_2, choice, "Pile 2") == 'quit':
+                result = player_choosing_marbles(pile_2, choice, "Pile 2")
+                if result == 'quit':
                     break
-                else:
-                    player_turn = False  # Switch to computer
+                elif result == 'ok':
+                    player_turn = False
             elif scan == '3': # display pile
                 print("Pile 1: ", pile_1)
                 print("Pile 2: ", pile_2)
@@ -275,10 +301,11 @@ def standard(pile_1, pile_2):
         else:
             # Computer's turn
             if len(pile_1) >= 1: # If pile 1 is not empty
-                computer_turn(pile_1, "Pile 1", misere=True)
+                computer_turn(pile_1, "Pile 1", misere=False)
+                player_turn = True 
             elif len(pile_2) >= 1: # If pile 2 is not empty
-                computer_turn(pile_2, "Pile 2", misere=True)
-            player_turn = True 
+                computer_turn(pile_2, "Pile 2", misere=False)
+                player_turn = True 
 
 def display_player_options():
     print("Player 1: Your Turn")
@@ -304,15 +331,17 @@ def misere(pile_1, pile_2):
             if player_turn is True:
                 # Player just moved and emptied a pile => Player wins!
                 player_score = calculate_misere_score(player_marbles, player_score)
+                computer_score = calculate_misere_score(computer_marbles, computer_score)
                 print("Pile is empty.")
                 print("You win!")
                 print("Player score is", player_score)
             else:
                 # Computer just moved and emptied a pile => Computer wins!
                 player_score = calculate_misere_score(player_marbles, player_score)
+                computer_score = calculate_misere_score(computer_marbles, computer_score)
                 print("Pile is empty.")
                 print("You lose!")
-                print("Player score is", player_score)
+                print("Player score is", -player_score)
             break
 
         if player_turn:
@@ -325,18 +354,25 @@ def misere(pile_1, pile_2):
                 print("You've chosen Pile 1:")
                 display_player_choice()
                 choice = input("\n")
-                if player_choosing_marbles(pile_1, choice, "Pile 1", misere=True) == 'quit':
+                result = player_choosing_marbles(pile_1, choice, "Pile 1")
+                if result == 'quit':
                     break
+                elif result == 'ok':
+                    player_turn = False
                 else:
-                    player_turn = False  # Switch to computer
+                    print("ERROR"); break;
+
             elif scan == '2':
                 print("You've chosen Pile 2:")
                 display_player_choice()
                 choice = input("\n")
-                if player_choosing_marbles(pile_2, choice, "Pile 2", misere=True) == 'quit':
+                result = player_choosing_marbles(pile_2, choice, "Pile 2")
+                if result == 'quit':
                     break
+                elif result == 'ok':
+                    player_turn = False
                 else:
-                    player_turn = False  # Switch to computer
+                    print("ERROR: 374"); break;
             elif scan == '3':
                 print("Pile 1: ", pile_1)
                 print("Pile 2: ", pile_2)
@@ -351,6 +387,19 @@ def misere(pile_1, pile_2):
             elif len(pile_2) >= 1:
                 computer_turn(pile_2, "Pile 2", misere=True)
             player_turn = True  # Switch back to player
+
+def eval_fn(state, max_depth=10):
+    red_count = state.pile.count("red")
+    blue_count = state.pile.count("blue")
+    total_score_potential = red_count * 2 + blue_count * 3
+
+    if total_score_potential >= 60:
+        return min(6, max_depth)
+    elif total_score_potential >= 30:
+        return min(8, max_depth)
+    else:
+        return min(10, max_depth)
+
 
 def main():
 
@@ -375,8 +424,7 @@ def main():
         sys.exit(1)
     
     version = "standard"      # default
-    player_first_player = "default"   # default 
-    
+    player_first_player = "default"   # default     
     
     i = 2  # Start after num-red and num-blue
     while i < len(args):
@@ -384,10 +432,12 @@ def main():
             version = "-m"
         elif args[i] == "-h":
             player_first_player = "-h"
-        # elif args[i] == "-d": *INCOMPLETE*
-        #     if i + 1 < len(args):
-        #         depth = int(args[i + 1])
-        #         i += 1
+        elif args[i] == "-d": #*INCOMPLETE*
+            print("Custom Eval Function is being used")
+            is_custom_eval_used = True
+            if i + 1 < len(args):
+                depth = int(args[i + 1])
+                i += 1
         else:
             print(f"Unknown argument: {args[i]}")
             sys.exit(1)

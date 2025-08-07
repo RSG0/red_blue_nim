@@ -77,8 +77,9 @@ Displays the options between choosing a pile, looking at all the remaining marbl
 main()
 Accepts command-line arguments for number of red and blue marbles, version, first-player, and depth
 
-How the is run: 
-Format of command line arguments: red_blue_nim.py <num-red> <num-blue> [version] [first-player] [d]
+How the code is run: 
+Format of command line arguments: 
+red_blue_nim.py <num-red> <num-blue> [version] [first-player] [d]
 num-red: # of red marbles to be distributed among the 2 piles (Needs to be more than 8)
 num-blue: # of blue marbles to be distributed among the 2 piles (Needs to be more than 8)
 version: either standard (default)  or misere '-m'
@@ -87,4 +88,6 @@ d: depth of the minimax algorithm (default 100)
 
 To run the code open up the terminal and insert this for example:
 python red_blue_nim.py 10 10 -m -h 
-python red_blue_nim.py 10 12 -m -h 
+python red_blue_nim.py 10 12 -m -h -d 
+
+
